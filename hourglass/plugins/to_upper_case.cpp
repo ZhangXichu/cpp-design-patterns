@@ -1,18 +1,24 @@
 #include <iostream>
 #include <cctype>
 
-
-int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <string>" << std::endl;
-        return 1;
+class ToUpperCase
+{
+public:
+    std::string execute(std::string input) const
+    {
+        for (char& c : input) {
+            c = std::toupper(c);
+        }
     }
+};
 
-    std::string input = argv[1];
-    for (char& c : input) {
-        c = std::toupper(c);
+struct plugin_handle {
+    ToUpperCase impl;
+};
+
+extern "C" {
+    plugin_handle* plugin_create()
+    {
+        return new plugin_handle;
     }
-
-    std::cout << input << std::endl;
-    return 0;
 }
