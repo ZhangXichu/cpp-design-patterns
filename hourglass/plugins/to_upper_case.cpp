@@ -1,14 +1,16 @@
 #include <cctype>
 #include <cstring>
+#include <string>
+
 #include <plugin_api.h>
-#include <iostream>
 
 class ToUpperCase {
   public:
     std::string execute(std::string input) const {
         for (char &c : input) {
-            c = std::toupper(c);
+            c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
         }
+        return input;
     }
 };
 
@@ -18,22 +20,19 @@ struct plugin_handle {
 
 plugin_handle *plugin_create() { return new plugin_handle{}; }
 
-void destory_handle(plugin_handle *plugin) { delete plugin; }
+void plugin_destroy(plugin_handle *plugin) { delete plugin; }
 
-int plugin_execute(plugin_handle *plugin, const char *input, char *output,
-                   std::size_t output_size) {
-    if (!plugin || !input || !output) {
+int plugin_execute(plugin_handle *h, const char *input, plugin_result *out) {
+    if (!h || !input || !out) {
         return 1;
     }
 
     try {
-        const std::string result = plugin->impl.execute(input);
+        const std::string result = h->impl.execute(input);
 
-        if (result.size() + 1 > output_size) {
-            return 2;
-        }
-
-        std::memcpy(output, result.c_str(), result.size() + 1);
+        out->type = PLUGIN_TYPE_STRING;
+        out->value.val_str.data = result.c_str();
+        out->value.val_str.len = result.size();
 
         return 0;
     } catch (...) {

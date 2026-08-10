@@ -21,3 +21,24 @@ class WordCount {
 struct plugin_handle {
     WordCount impl;
 };
+
+plugin_handle *plugin_create() { return new plugin_handle{}; }
+
+void plugin_destroy(plugin_handle *plugin) { delete plugin; }
+
+int plugin_execute(plugin_handle *h, const char *input, plugin_result *out) {
+    if (!h || !input || !out) {
+        return 1;
+    }
+
+    try {
+        int result = h->impl.execute(input);
+
+        out->type = PLUGIN_TYPE_INTEGER;
+        out->value.val_int = result;
+
+        return 0;
+    } catch (...) {
+        return 3;
+    }
+}
