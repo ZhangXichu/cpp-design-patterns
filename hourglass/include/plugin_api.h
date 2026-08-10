@@ -2,6 +2,7 @@
 #define PLUGIN_API_H
 
 #include <cstdint>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
