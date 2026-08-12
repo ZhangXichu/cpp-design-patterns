@@ -1,5 +1,6 @@
 #include <cctype>
 #include <cstring>
+#include <memory>
 #include <string>
 
 #include <plugin_api.h>
@@ -12,6 +13,18 @@ class ToUpperCase {
         }
         return input;
     }
+    
+    void set_result(std::string result) {
+        _result = std::make_unique<std::string>(result);
+    }
+
+    std::string& get_result() const {
+        return *_result;
+    }
+
+private:
+    std::unique_ptr<std::string> _result;
+
 };
 
 struct plugin_handle {
@@ -28,11 +41,12 @@ int plugin_execute(plugin_handle *h, const char *input, plugin_result *out) {
     }
 
     try {
-        const std::string result = h->impl.execute(input);
+
+        h->impl.set_result(h->impl.execute(input));
 
         out->type = PLUGIN_TYPE_STRING;
-        out->value.val_str.data = result.c_str();
-        out->value.val_str.len = result.size();
+        out->value.val_str.data = h->impl.get_result().c_str();
+        out->value.val_str.len = h->impl.get_result().size();
 
         return 0;
     } catch (...) {
