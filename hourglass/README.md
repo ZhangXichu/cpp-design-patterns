@@ -24,3 +24,6 @@ where a C API layer is between the C++ interface for the user and the C++ intern
 Use build.sh to compile the plugins into .so.
 
 The key point for understanding this is that the C API include/plugin_api.h is included in both plugins and the C++ interface for the user (host/plugin.cpp).
+
+
+#TODO complete this 
