@@ -35,6 +35,9 @@ Plugin::Plugin(std::filesystem::path path) : _impl(std::make_unique<Impl>()) {
     _impl->destroy = (destroy_fn)load_symbol(_impl->lib, "plugin_destroy");
     _impl->execute = (execute_fn)load_symbol(_impl->lib, "plugin_execute");
     _impl->h = _impl->create();
+    if (!_impl->h) {
+        throw std::runtime_error("Plugin creation failed");
+    }
 }
 
 Plugin::~Plugin() {

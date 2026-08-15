@@ -22,7 +22,13 @@ struct plugin_handle {
     WordCount impl;
 };
 
-plugin_handle *plugin_create() { return new plugin_handle{}; }
+plugin_handle *plugin_create() {
+    try {
+        return new plugin_handle{};
+    } catch (...) {
+        return nullptr;
+    }
+}
 
 void plugin_destroy(plugin_handle *plugin) { delete plugin; }
 
