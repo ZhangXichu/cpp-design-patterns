@@ -28,8 +28,6 @@ typedef struct plugin_result {
 
 typedef struct plugin_handle plugin_handle;
 
-PLUGIN_EXPORT plugin_type plugin_result_type(void);
-
 PLUGIN_EXPORT plugin_handle *plugin_create(void);
 PLUGIN_EXPORT void plugin_destroy(plugin_handle *h);
 PLUGIN_EXPORT status plugin_execute(plugin_handle *h, const char *input,
