@@ -8,11 +8,20 @@ using destroy_fn = void (*)(plugin_handle *);
 using execute_fn = status (*)(plugin_handle *, const char *, plugin_result *);
 
 struct Plugin::Impl {
-    void *lib;
-    plugin_handle *h;
-    create_fn create;
-    destroy_fn destroy;
-    execute_fn execute;
+    void *lib = nullptr;
+    plugin_handle *h = nullptr;
+    create_fn create = nullptr;
+    destroy_fn destroy = nullptr;
+    execute_fn execute = nullptr;
+
+    ~Impl() {
+        if (h && destroy) {
+            destroy(h);
+        }
+        if (lib) {
+            dlclose(lib);
+        }
+    }
 };
 
 Plugin::Plugin(std::filesystem::path path) : _impl(std::make_unique<Impl>()) {
@@ -40,10 +49,7 @@ Plugin::Plugin(std::filesystem::path path) : _impl(std::make_unique<Impl>()) {
     }
 }
 
-Plugin::~Plugin() {
-    _impl->destroy(_impl->h);
-    dlclose(_impl->lib);
-}
+Plugin::~Plugin() = default;
 
 PluginResult Plugin::execute(const char *input) const {
     plugin_result result{};
