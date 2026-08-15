@@ -49,7 +49,13 @@ status plugin_execute(plugin_handle *h, const char *input, plugin_result *out) {
 
         out->type = PLUGIN_TYPE_STRING;
         out->value.val_str.data = h->impl.get_result().c_str();
-        out->value.val_str.len = h->impl.get_result().size();
+
+        const auto size = h->impl.get_result().size();
+        if (size > INT32_MAX) {
+            return status::OTHER_ERR;
+        }
+
+        out->value.val_str.len = static_cast<int32_t>(size);
 
         return status::OK;
     } catch (...) {
