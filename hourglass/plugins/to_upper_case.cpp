@@ -13,18 +13,15 @@ class ToUpperCase {
         }
         return input;
     }
-    
+
     void set_result(std::string result) {
         _result = std::make_unique<std::string>(result);
     }
 
-    std::string& get_result() const {
-        return *_result;
-    }
+    std::string &get_result() const { return *_result; }
 
-private:
+  private:
     std::unique_ptr<std::string> _result;
-
 };
 
 struct plugin_handle {
@@ -35,9 +32,9 @@ plugin_handle *plugin_create() { return new plugin_handle{}; }
 
 void plugin_destroy(plugin_handle *plugin) { delete plugin; }
 
-int plugin_execute(plugin_handle *h, const char *input, plugin_result *out) {
+status plugin_execute(plugin_handle *h, const char *input, plugin_result *out) {
     if (!h || !input || !out) {
-        return 1;
+        return status::INVALID_INPUT;
     }
 
     try {
@@ -48,8 +45,8 @@ int plugin_execute(plugin_handle *h, const char *input, plugin_result *out) {
         out->value.val_str.data = h->impl.get_result().c_str();
         out->value.val_str.len = h->impl.get_result().size();
 
-        return 0;
+        return status::OK;
     } catch (...) {
-        return 3;
+        return status::OTHER_ERR;
     }
 }

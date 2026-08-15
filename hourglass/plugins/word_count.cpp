@@ -26,9 +26,9 @@ plugin_handle *plugin_create() { return new plugin_handle{}; }
 
 void plugin_destroy(plugin_handle *plugin) { delete plugin; }
 
-int plugin_execute(plugin_handle *h, const char *input, plugin_result *out) {
+status plugin_execute(plugin_handle *h, const char *input, plugin_result *out) {
     if (!h || !input || !out) {
-        return 1;
+        return status::INVALID_INPUT;
     }
 
     try {
@@ -37,8 +37,8 @@ int plugin_execute(plugin_handle *h, const char *input, plugin_result *out) {
         out->type = PLUGIN_TYPE_INTEGER;
         out->value.val_int = result;
 
-        return 0;
+        return status::OK;
     } catch (...) {
-        return 3;
+        return status::OTHER_ERR;
     }
 }

@@ -5,7 +5,7 @@
 
 using create_fn = plugin_handle *(*)(void);
 using destroy_fn = void (*)(plugin_handle *);
-using execute_fn = int32_t (*)(plugin_handle *, const char *, plugin_result *);
+using execute_fn = status (*)(plugin_handle *, const char *, plugin_result *);
 
 struct Plugin::Impl {
     void *lib;
@@ -44,7 +44,18 @@ Plugin::~Plugin() {
 
 PluginResult Plugin::execute(const char *input) const {
     plugin_result result{};
-    _impl->execute(_impl->h, input, &result);
+    status s = _impl->execute(_impl->h, input, &result);
+    switch (s) {
+    case status::OK:
+        break;
+    case status::INVALID_INPUT:
+        throw std::runtime_error("Invalid input. Should not be null ptr.");
+    case status::OTHER_ERR:
+        throw std::runtime_error("Plugin execution failed");
+    default:
+        throw std::runtime_error("Plugin returned an unknown status");
+    }
+
     switch (result.type) {
     case PLUGIN_TYPE_INTEGER:
         return result.value.val_int;

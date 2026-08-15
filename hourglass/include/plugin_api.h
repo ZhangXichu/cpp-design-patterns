@@ -14,10 +14,14 @@ typedef enum plugin_type {
     PLUGIN_TYPE_INTEGER
 } plugin_type;
 
+typedef enum status { INVALID_INPUT, OTHER_ERR, OK } status;
 typedef struct plugin_result {
     plugin_type type;
     union {
-        struct val_str {const char *data; int32_t len;} val_str;
+        struct val_str {
+            const char *data;
+            int32_t len;
+        } val_str;
         int32_t val_int;
     } value;
 } plugin_result;
@@ -28,7 +32,8 @@ PLUGIN_EXPORT plugin_type plugin_result_type(void);
 
 PLUGIN_EXPORT plugin_handle *plugin_create(void);
 PLUGIN_EXPORT void plugin_destroy(plugin_handle *h);
-PLUGIN_EXPORT int32_t plugin_execute(plugin_handle *h, const char *input, plugin_result *out);
+PLUGIN_EXPORT status plugin_execute(plugin_handle *h, const char *input,
+                                    plugin_result *out);
 
 #ifdef __cplusplus
 }
