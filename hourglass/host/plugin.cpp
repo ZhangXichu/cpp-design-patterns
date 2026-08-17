@@ -25,6 +25,8 @@ struct Plugin::Impl {
 };
 
 Plugin::Plugin(std::filesystem::path path) : _impl(std::make_unique<Impl>()) {
+    // RTLD_LOCAL keeps the plugin's symbols out of the global lookup scope, so
+    // every plugin can export the same function names without collisions.
     _impl->lib = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
     if (!_impl->lib) {
         throw std::runtime_error(dlerror());

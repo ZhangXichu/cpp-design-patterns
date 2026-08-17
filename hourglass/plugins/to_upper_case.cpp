@@ -14,6 +14,8 @@ class ToUpperCase {
         return input;
     }
 
+    // The string handed back through plugin_result must outlive the call, so it
+    // is kept in a member instead of returned by value.
     void set_result(std::string result) {
         _result = std::make_unique<std::string>(result);
     }
