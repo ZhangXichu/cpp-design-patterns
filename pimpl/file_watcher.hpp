@@ -1,6 +1,7 @@
 #include <functional>
 #include <memory>
 
+#define BUF_LEN (10 * (sizeof(struct inotify_event) + 16))
 class FileWatcher {
 
 using Callback = std::function<void(const std::string& path)>;
