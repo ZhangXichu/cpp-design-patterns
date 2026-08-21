@@ -4,13 +4,19 @@
 #include <sys/inotify.h>
 #include <unistd.h>
 
+namespace {
+constexpr std::size_t buffer_length =
+    10 * (sizeof(inotify_event) + 16);
+}
+
 class FileWatcher::impl {
-    
-    public:
-        void start();
-        void stop();
-        void on_change(Callback cb);
-    
+public:
+    void start();
+    void stop();
+    void on_change(Callback cb);
+
+private:
+    Callback _cb;
 };
 
 FileWatcher::FileWatcher()
@@ -33,8 +39,8 @@ void FileWatcher::on_change(Callback cb) {
 
 
 void FileWatcher::impl::start() {
-    int fd, wd, j;
-    char buf[BUF_LEN] __attribute__ ((aligned(8)));
+    int fd, wd;
+    char buf[buffer_length] __attribute__ ((aligned(8)));
     ssize_t numRead;
     char *p;
     struct inotify_event *event;
@@ -42,9 +48,9 @@ void FileWatcher::impl::start() {
     fd = inotify_init();                 /* Create inotify instance */
 
     wd = inotify_add_watch(fd, "./test_path", IN_ALL_EVENTS);
-    
+
     for (;;) {                                  /* Read events forever */
-        numRead = read(fd, buf, BUF_LEN);
+        numRead = read(fd, buf, buffer_length);
 
         std::cout << "Read" << (long) numRead << "bytes from inotify" << std::endl;
 
@@ -53,25 +59,9 @@ void FileWatcher::impl::start() {
         for (p = buf; p < buf + numRead; ) {
 
             event = (struct inotify_event *) p;
-            if (event->mask & IN_CREATE)
-                std::cout << "created: ";
 
-            if (event->mask & IN_MODIFY)
-                std::cout << "modified: ";
-
-            if (event->mask & IN_DELETE)
-                std::cout << "deleted: ";
-
-            if (event->mask & IN_MOVED_FROM)
-                std::cout << "moved from: ";
-
-            if (event->mask & IN_MOVED_TO)
-                std::cout << "moved to: ";
-
-            if (event->len > 0)
-                std::cout << event->name;
-
-            std::cout << '\n';
+            if (_cb)
+                _cb(event);
 
             p += sizeof(inotify_event) + event->len;
         }
@@ -82,9 +72,9 @@ void FileWatcher::impl::start() {
 }
 
 void FileWatcher::impl::stop() {
-    
+
 }
 
 void FileWatcher::impl::on_change(Callback cb) {
-    
+    _cb = cb;
 }
