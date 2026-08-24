@@ -1,6 +1,6 @@
 #include "file_watcher.hpp"
 
-#include <iostream>
+#include <poll.h>
 #include <sys/inotify.h>
 #include <unistd.h>
 
@@ -17,6 +17,7 @@ public:
 
 private:
     Callback _cb;
+    std::atomic_bool _running{false};
 };
 
 FileWatcher::FileWatcher()
@@ -39,20 +40,32 @@ void FileWatcher::on_change(Callback cb) {
 
 
 void FileWatcher::impl::start() {
+    _running.store(true);
+
     int fd, wd;
     char buf[buffer_length] __attribute__ ((aligned(8)));
     ssize_t numRead;
     char *p;
     struct inotify_event *event;
 
-    fd = inotify_init();                 /* Create inotify instance */
+    fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);  
+    pollfd watched_fd{fd, POLLIN, 0};   
 
     wd = inotify_add_watch(fd, "./test_path", IN_ALL_EVENTS);
 
-    for (;;) {                                  /* Read events forever */
-        numRead = read(fd, buf, buffer_length);
+    while (_running.load()) {                             
+        const int result = poll(&watched_fd, 1, 250);/* Create inotify instance */
 
-        std::cout << "Read" << (long) numRead << "bytes from inotify" << std::endl;
+        if (result < 0) {
+            if (errno == EINTR)
+                continue;
+            break;
+        }
+        
+        if (result == 0)
+            continue; // Re-check _running every 250 ms.
+
+        numRead = read(fd, buf, buffer_length);
 
         /* Process all of the events in buffer returned by read() */
 
@@ -72,7 +85,7 @@ void FileWatcher::impl::start() {
 }
 
 void FileWatcher::impl::stop() {
-
+    _running.store(false);
 }
 
 void FileWatcher::impl::on_change(Callback cb) {

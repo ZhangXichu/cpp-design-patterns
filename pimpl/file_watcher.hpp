@@ -1,3 +1,4 @@
+#include <atomic>
 #include <functional>
 #include <memory>
 
