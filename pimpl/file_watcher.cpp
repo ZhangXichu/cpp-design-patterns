@@ -17,6 +17,7 @@ public:
 
 private:
     Callback _cb;
+    int _fd, _wd;
     std::atomic_bool _running{false};
 };
 
@@ -42,16 +43,22 @@ void FileWatcher::on_change(Callback cb) {
 void FileWatcher::impl::start() {
     _running.store(true);
 
-    int fd, wd;
     char buf[buffer_length] __attribute__ ((aligned(8)));
     ssize_t numRead;
     char *p;
     struct inotify_event *event;
 
-    fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);  
-    pollfd watched_fd{fd, POLLIN, 0};   
+    _fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);  
+    pollfd watched_fd{_fd, POLLIN, 0}; 
+    
+    constexpr uint32_t events =
+    IN_CREATE |
+    IN_CLOSE_WRITE |
+    IN_DELETE |
+    IN_MOVED_FROM |
+    IN_MOVED_TO;
 
-    wd = inotify_add_watch(fd, "./test_path", IN_ALL_EVENTS);
+    _wd = inotify_add_watch(_fd, "./test_path", events);
 
     while (_running.load()) {                             
         const int result = poll(&watched_fd, 1, 250);/* Create inotify instance */
@@ -65,7 +72,7 @@ void FileWatcher::impl::start() {
         if (result == 0)
             continue; // Re-check _running every 250 ms.
 
-        numRead = read(fd, buf, buffer_length);
+        numRead = read(_fd, buf, buffer_length);
 
         /* Process all of the events in buffer returned by read() */
 
@@ -79,13 +86,12 @@ void FileWatcher::impl::start() {
             p += sizeof(inotify_event) + event->len;
         }
     }
-    inotify_rm_watch(fd, wd);
-    close(fd);
-
 }
 
 void FileWatcher::impl::stop() {
     _running.store(false);
+    inotify_rm_watch(_fd, _wd);
+    close(_fd);
 }
 
 void FileWatcher::impl::on_change(Callback cb) {

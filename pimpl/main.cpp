@@ -16,23 +16,24 @@ int main() {
     
     FileWatcher watcher;
     watcher.on_change([](struct inotify_event *event) {
+        const char* action = nullptr;
+
         if (event->mask & IN_CREATE)
-            std::cout << "created: ";
+            action = "created";
+        else if (event->mask & IN_CLOSE_WRITE)
+            action = "modified";
+        else if (event->mask & IN_DELETE | IN_MOVED_FROM)
+            action = "deleted";
+        else if (event->mask & IN_MOVED_TO)
+            action = "moved to";
 
-        if (event->mask & IN_MODIFY)
-            std::cout << "modified: ";
+        if (!action)
+            return;
 
-        if (event->mask & IN_DELETE)
-            std::cout << "deleted: ";
-
-        if (event->mask & IN_MOVED_FROM)
-            std::cout << "moved from: ";
-
-        if (event->mask & IN_MOVED_TO)
-            std::cout << "moved to: ";
+        std::cout << action;
 
         if (event->len > 0)
-            std::cout << event->name;
+            std::cout << ": " << event->name;
 
         std::cout << '\n';
     });
@@ -47,6 +48,6 @@ int main() {
     std::cout << "\nStopping file watcher...\n";
     watcher.stop();
     worker.join();
-    
+
     return 0;
 }

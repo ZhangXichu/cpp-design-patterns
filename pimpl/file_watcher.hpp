@@ -15,7 +15,6 @@ public:
     void start();
     void stop();
     void on_change(Callback cb);
-    
 
 private:
     struct impl;
