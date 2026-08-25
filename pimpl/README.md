@@ -43,11 +43,9 @@ The destructor is declared in the header and defined out of line in `file_watche
 | [test_path/](test_path/) | Directory monitored by the example |
 | [CMakeLists.txt](CMakeLists.txt) | Builds the file-watcher library and demo executable |
 
-### The two sides
-
-The public side offers three operations: install an event callback, start watching and stop watching. A caller can use those operations without knowing which descriptors, flags or buffers the watcher stores internally.
-
-The private `FileWatcher::impl` creates a nonblocking inotify descriptor, watches `test_path`, and uses `poll()` to wait for readable events. The finite polling timeout lets the loop periodically check the atomic running flag. The demo blocks `SIGINT` and `SIGTERM`, waits for either signal with `sigwait()`, calls `stop()` from normal thread context, and then joins the worker thread.
+The public operations, the inotify polling loop, and the demo's signal-driven
+shutdown are documented in [file_watcher.hpp](file_watcher.hpp),
+[file_watcher.cpp](file_watcher.cpp) and [main.cpp](main.cpp).
 
 ### Building and running
 

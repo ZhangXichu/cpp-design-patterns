@@ -7,6 +7,8 @@
 #include <thread>
 
 int main() {
+    // Block SIGINT and SIGTERM, wait for either with sigwait(), call stop()
+    // from normal thread context, then join the worker thread.
     sigset_t signals;
     sigemptyset(&signals);
     sigaddset(&signals, SIGINT);

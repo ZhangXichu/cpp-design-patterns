@@ -9,6 +9,13 @@ constexpr std::size_t buffer_length =
     10 * (sizeof(inotify_event) + 16);
 }
 
+/**
+ * @brief Private implementation of FileWatcher.
+ *
+ * Creates a nonblocking inotify descriptor, watches `test_path`, and uses
+ * poll() to wait for readable events. The finite polling timeout lets the
+ * loop periodically check the atomic running flag.
+ */
 class FileWatcher::impl {
 public:
     void start();
