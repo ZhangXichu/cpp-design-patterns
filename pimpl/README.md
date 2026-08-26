@@ -77,6 +77,7 @@ Since this is a demo project, there are still things to be improved for it to be
 
 * **Linux-only implementation** — the implementation uses inotify, and the callback exposes `inotify_event`; a fully platform-independent interface would translate it into a library-owned event type.
 * **Fixed path and event mask** — `test_path` and the selected events are hard-coded instead of being supplied through the public API.
-* **Error handling** — failures from inotify setup, `poll()`, `read()` and signal functions should be reported consistently.
+* **Error reporting** — polling and reading failures safely leave the loop, but errors are not reported to the caller. Failures from inotify setup and signal functions also need explicit handling.
 * **Lifecycle contract** — repeated or concurrent calls to `start()` and `stop()` are not defined.
+* **Shutdown latency** — because `stop()` does not actively wake `poll()`, shutdown can take up to the 250 ms polling timeout. An `eventfd` or pipe could provide immediate wake-up.
 * **Move semantics** — move-in and move-out events are presented as separate directory-level changes rather than being paired using the inotify cookie.
