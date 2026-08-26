@@ -1,8 +1,8 @@
+#pragma once
+
 #include <atomic>
 #include <functional>
 #include <memory>
-
-static constexpr int invalid = -1;
 
 struct inotify_event;
 

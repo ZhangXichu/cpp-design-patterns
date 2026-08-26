@@ -6,8 +6,9 @@
 #include <unistd.h>
 
 namespace {
+static constexpr int invalid = -1;
 constexpr std::size_t buffer_length = 10 * (sizeof(inotify_event) + 16);
-}
+} // namespace
 
 /**
  * @brief Private implementation of FileWatcher.
@@ -24,7 +25,7 @@ class FileWatcher::impl {
 
   private:
     Callback _cb;
-    int _fd, _wd;
+    int _fd{invalid}, _wd{invalid};
     std::atomic_bool _running{false};
 };
 
