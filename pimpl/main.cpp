@@ -2,8 +2,8 @@
 
 #include <csignal>
 #include <iostream>
-#include <sys/inotify.h>
 #include <pthread.h>
+#include <sys/inotify.h>
 #include <thread>
 
 int main() {
@@ -15,16 +15,16 @@ int main() {
     sigaddset(&signals, SIGTERM);
 
     pthread_sigmask(SIG_BLOCK, &signals, nullptr);
-    
+
     FileWatcher watcher;
     watcher.on_change([](struct inotify_event *event) {
-        const char* action = nullptr;
+        const char *action = nullptr;
 
         if (event->mask & IN_CREATE)
             action = "created";
         else if (event->mask & IN_CLOSE_WRITE)
             action = "modified";
-        else if (event->mask & IN_DELETE | IN_MOVED_FROM)
+        else if (event->mask & (IN_DELETE | IN_MOVED_FROM))
             action = "deleted";
         else if (event->mask & IN_MOVED_TO)
             action = "moved to";
@@ -40,9 +40,7 @@ int main() {
         std::cout << '\n';
     });
 
-    std::thread worker([&watcher] {
-        watcher.start();
-    });
+    std::thread worker([&watcher] { watcher.start(); });
 
     int received_signal = 0;
     sigwait(&signals, &received_signal);
